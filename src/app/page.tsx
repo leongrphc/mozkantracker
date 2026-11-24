@@ -1,10 +1,13 @@
 import { Suspense } from "react";
 import { connection } from "next/server";
+import Link from "next/link";
 import { SearchBox } from "@/components/search-box";
 import { PosterGrid, PosterGridSkeleton } from "@/components/poster-card";
-import { SetupNotice } from "@/components/setup-notice";
+import { LiteModeBanner } from "@/components/setup-notice";
+import { ContinueWatching } from "@/components/continue-watching";
 import { getTrending, hasTmdbCredentials } from "@/lib/tmdb";
 import { toCard } from "@/lib/to-card";
+import { tvmCard, tvmToday } from "@/lib/tvmaze";
 
 export default function Home() {
   return (
@@ -26,19 +29,55 @@ export default function Home() {
         </div>
       </section>
 
-      <section className="mx-auto max-w-6xl px-4 py-10">
-        <h2 className="mb-5 font-display text-3xl">Bu hafta popüler</h2>
-        <Suspense fallback={<PosterGridSkeleton />}>
-          <Trending />
-        </Suspense>
-      </section>
+      <ContinueWatching />
+
+      <Suspense
+        fallback={
+          <section className="mx-auto max-w-6xl px-4 py-10">
+            <div className="mb-5 h-9 w-56 animate-pulse rounded bg-surface-2" />
+            <PosterGridSkeleton />
+          </section>
+        }
+      >
+        <Discover />
+      </Suspense>
     </>
   );
 }
 
-async function Trending() {
+async function Discover() {
   await connection();
-  if (!hasTmdbCredentials()) return <SetupNotice />;
-  const items = await getTrending("week");
-  return <PosterGrid items={items.slice(0, 18).map(toCard)} />;
+
+  if (hasTmdbCredentials()) {
+    const [week, day] = await Promise.all([getTrending("week"), getTrending("day")]);
+    return (
+      <>
+        <section className="mx-auto max-w-6xl px-4 py-10">
+          <div className="mb-5 flex items-baseline justify-between">
+            <h2 className="font-display text-3xl">Bugün gündemde</h2>
+            <Link href="/kesfet" className="text-sm text-muted hover:text-accent">
+              Keşfet →
+            </Link>
+          </div>
+          <PosterGrid items={day.slice(0, 12).map(toCard)} />
+        </section>
+        <section className="mx-auto max-w-6xl px-4 pb-10">
+          <h2 className="mb-5 font-display text-3xl">Bu hafta popüler</h2>
+          <PosterGrid items={week.slice(0, 18).map(toCard)} />
+        </section>
+      </>
+    );
+  }
+
+  const today = new Date().toISOString().slice(0, 10);
+  const shows = await tvmToday(today);
+  return (
+    <section className="mx-auto max-w-6xl px-4 py-10">
+      <div className="mb-6">
+        <LiteModeBanner />
+      </div>
+      <h2 className="mb-5 font-display text-3xl">Bugün yeni bölümü çıkanlar</h2>
+      <PosterGrid items={shows.slice(0, 18).map(tvmCard)} />
+    </section>
+  );
 }
