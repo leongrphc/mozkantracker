@@ -304,3 +304,60 @@ export function formatRuntime(min?: number | null) {
   const m = min % 60;
   return h ? `${h} sa ${m} dk` : `${m} dk`;
 }
+
+/* ---------- keşfet ---------- */
+
+export type DiscoverSort = "popular" | "rating" | "new";
+
+const SORT_BY: Record<DiscoverSort, { movie: string; tv: string }> = {
+  popular: { movie: "popularity.desc", tv: "popularity.desc" },
+  rating: { movie: "vote_average.desc", tv: "vote_average.desc" },
+  new: { movie: "primary_release_date.desc", tv: "first_air_date.desc" },
+};
+
+export async function discover(opts: {
+  type: MediaType;
+  provider?: number;
+  genre?: number;
+  sort: DiscoverSort;
+  page: number;
+}) {
+  "use cache";
+  cacheLife("hours");
+  const today = new Date().toISOString().slice(0, 10);
+  const data = await tmdb<Paged<SearchItem>>(`/discover/${opts.type}`, {
+    watch_region: REGION,
+    with_watch_providers: opts.provider,
+    with_watch_monetization_types: opts.provider ? "flatrate|free|ads" : undefined,
+    with_genres: opts.genre,
+    sort_by: SORT_BY[opts.sort][opts.type],
+    "vote_count.gte": opts.sort === "rating" ? 300 : opts.sort === "new" ? 10 : undefined,
+    [opts.type === "movie" ? "primary_release_date.lte" : "first_air_date.lte"]:
+      opts.sort === "new" ? today : undefined,
+    include_adult: "false",
+    page: opts.page,
+  });
+  return {
+    ...data,
+    results: data.results.map((r) => ({ ...r, media_type: opts.type })),
+  };
+}
+
+export async function getProviders(type: MediaType) {
+  "use cache";
+  cacheLife("days");
+  const data = await tmdb<{
+    results: (Provider & { display_priorities?: Record<string, number> })[];
+  }>(`/watch/providers/${type}`, { watch_region: REGION });
+  return data.results
+    .map((p) => ({ ...p, prio: p.display_priorities?.[REGION] ?? 999 }))
+    .sort((a, b) => a.prio - b.prio)
+    .slice(0, 14);
+}
+
+export async function getGenres(type: MediaType) {
+  "use cache";
+  cacheLife("days");
+  const data = await tmdb<{ genres: Genre[] }>(`/genre/${type}/list`);
+  return data.genres;
+}
