@@ -1,6 +1,5 @@
 "use client";
 
-import type { PosterCardData } from "@/components/poster-card";
 import {
   STATUS_LABEL,
   epKey,
@@ -9,10 +8,9 @@ import {
   setEpisodes,
   setStatus,
   useTracker,
+  type Card,
   type Status,
 } from "@/lib/tracker";
-
-type Card = PosterCardData & { totalEpisodes?: number };
 
 export function StatusPicker({ card }: { card: Card }) {
   const { list } = useTracker();
@@ -47,16 +45,16 @@ export function StatusPicker({ card }: { card: Card }) {
 }
 
 export function TvProgress({
-  tvId,
+  card,
   total,
   className = "",
 }: {
-  tvId: number;
+  card: Pick<Card, "type" | "id">;
   total: number;
   className?: string;
 }) {
   const { watched } = useTracker();
-  const count = watched[String(tvId)]?.length ?? 0;
+  const count = watched[itemKey(card.type, card.id)]?.length ?? 0;
   if (!total) return null;
   const pct = Math.min(100, Math.round((count / total) * 100));
   return (
@@ -78,17 +76,17 @@ export function TvProgress({
 }
 
 export function SeasonCount({
-  tvId,
+  card,
   season,
   total,
 }: {
-  tvId: number;
+  card: Pick<Card, "type" | "id">;
   season: number;
   total: number;
 }) {
   const { watched } = useTracker();
   const prefix = `s${season}e`;
-  const count = (watched[String(tvId)] ?? []).filter((k) =>
+  const count = (watched[itemKey(card.type, card.id)] ?? []).filter((k) =>
     k.startsWith(prefix),
   ).length;
   if (!count) return null;
@@ -100,25 +98,23 @@ export function SeasonCount({
 }
 
 export function EpisodeToggle({
-  tvId,
+  card,
   season,
   episode,
-  card,
 }: {
-  tvId: number;
+  card: Card;
   season: number;
   episode: number;
-  card: Card;
 }) {
   const { watched } = useTracker();
   const k = epKey(season, episode);
-  const on = (watched[String(tvId)] ?? []).includes(k);
+  const on = (watched[itemKey(card.type, card.id)] ?? []).includes(k);
   return (
     <button
       type="button"
       aria-pressed={on}
       aria-label={on ? "İzlenmedi olarak işaretle" : "İzlendi olarak işaretle"}
-      onClick={() => setEpisodes(tvId, [k], !on, card)}
+      onClick={() => setEpisodes(card, [k], !on)}
       className={
         on
           ? "flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-good text-bg"
@@ -131,24 +127,23 @@ export function EpisodeToggle({
 }
 
 export function SeasonMarkAll({
-  tvId,
+  card,
   season,
   episodes,
-  card,
 }: {
-  tvId: number;
+  card: Card;
   season: number;
   episodes: number[];
-  card: Card;
 }) {
   const { watched } = useTracker();
-  const set = new Set(watched[String(tvId)] ?? []);
+  const set = new Set(watched[itemKey(card.type, card.id)] ?? []);
   const keys = episodes.map((e) => epKey(season, e));
-  const all = keys.length > 0 && keys.every((k) => set.has(k));
+  if (!keys.length) return null;
+  const all = keys.every((k) => set.has(k));
   return (
     <button
       type="button"
-      onClick={() => setEpisodes(tvId, keys, !all, card)}
+      onClick={() => setEpisodes(card, keys, !all)}
       className="rounded-full border border-line bg-surface px-4 py-2 text-sm hover:border-good"
     >
       {all ? "Sezonu izlenmedi yap" : "Tüm sezonu izledim"}

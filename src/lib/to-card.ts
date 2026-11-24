@@ -1,5 +1,6 @@
+import type { NormalizedCast } from "@/components/details";
 import type { PosterCardData } from "@/components/poster-card";
-import { img, titleOf, yearOf, type SearchItem } from "@/lib/tmdb";
+import { img, titleOf, yearOf, type CastMember, type SearchItem } from "@/lib/tmdb";
 
 export function toCard(i: SearchItem): PosterCardData {
   return {
@@ -10,4 +11,13 @@ export function toCard(i: SearchItem): PosterCardData {
     poster: img(i.poster_path, "w342"),
     rating: i.vote_average || undefined,
   };
+}
+
+export function tmdbCast(cast?: CastMember[]): NormalizedCast[] {
+  return (cast ?? []).map((c) => ({
+    key: `${c.id}-${c.character}`,
+    name: c.name,
+    character: c.character,
+    photo: img(c.profile_path, "w185"),
+  }));
 }

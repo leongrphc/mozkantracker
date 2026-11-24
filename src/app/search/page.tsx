@@ -2,9 +2,10 @@ import { Suspense } from "react";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { PosterGrid, PosterGridSkeleton } from "@/components/poster-card";
-import { SetupNotice } from "@/components/setup-notice";
+import { LiteModeBanner } from "@/components/setup-notice";
 import { hasTmdbCredentials, searchMulti } from "@/lib/tmdb";
 import { toCard } from "@/lib/to-card";
+import { tvmCard, tvmSearch } from "@/lib/tvmaze";
 
 type SP = Promise<{ q?: string | string[]; page?: string | string[] }>;
 
@@ -48,7 +49,24 @@ async function Results({ searchParams }: { searchParams: SP }) {
       <p className="text-muted">Aramak için yukarıya bir dizi ya da film adı yaz.</p>
     );
   }
-  if (!hasTmdbCredentials()) return <SetupNotice />;
+  if (!hasTmdbCredentials()) {
+    const shows = await tvmSearch(q);
+    return (
+      <>
+        <h1 className="mb-4 font-display text-3xl sm:text-4xl">
+          <span className="text-muted">Sonuçlar:</span> {q}
+        </h1>
+        <div className="mb-6">
+          <LiteModeBanner />
+        </div>
+        {shows.length ? (
+          <PosterGrid items={shows.map(tvmCard)} />
+        ) : (
+          <NoResults />
+        )}
+      </>
+    );
+  }
 
   const data = await searchMulti(q, page);
   const items = data.results.map(toCard);
@@ -59,12 +77,7 @@ async function Results({ searchParams }: { searchParams: SP }) {
         <span className="text-muted">Sonuçlar:</span> {q}
       </h1>
       {items.length === 0 ? (
-        <div className="rounded-xl border border-line bg-surface p-8 text-center">
-          <p className="text-lg">Hiç sonuç bulunamadı.</p>
-          <p className="mt-1 text-sm text-muted">
-            Yazımı kontrol et ya da orijinal (İngilizce) adını dene.
-          </p>
-        </div>
+        <NoResults />
       ) : (
         <PosterGrid items={items} />
       )}
@@ -92,5 +105,16 @@ async function Results({ searchParams }: { searchParams: SP }) {
         </nav>
       ) : null}
     </>
+  );
+}
+
+function NoResults() {
+  return (
+    <div className="rounded-xl border border-line bg-surface p-8 text-center">
+      <p className="text-lg">Hiç sonuç bulunamadı.</p>
+      <p className="mt-1 text-sm text-muted">
+        Yazımı kontrol et ya da orijinal (İngilizce) adını dene.
+      </p>
+    </div>
   );
 }

@@ -20,7 +20,7 @@ import {
   providersFor,
   yearOf,
 } from "@/lib/tmdb";
-import { toCard } from "@/lib/to-card";
+import { tmdbCast, toCard } from "@/lib/to-card";
 
 type Params = Promise<{ id: string }>;
 
@@ -70,14 +70,15 @@ async function Movie({ params }: { params: Params }) {
     year: yearOf(m.release_date),
     poster: img(m.poster_path, "w342"),
     rating: m.vote_average || undefined,
+    runtime: m.runtime ?? undefined,
   };
   const imdb = m.external_ids?.imdb_id;
 
   return (
     <>
       <DetailHero
-        backdrop={m.backdrop_path}
-        poster={m.poster_path}
+        backdrop={img(m.backdrop_path, "w1280")}
+        poster={img(m.poster_path, "w500")}
         title={m.title}
         originalTitle={m.original_title}
         tagline={m.tagline}
@@ -109,7 +110,7 @@ async function Movie({ params }: { params: Params }) {
 
       <WhereToWatch providers={providersFor(m)} title={m.title} />
       <Trailer video={pickTrailer(m.videos)} />
-      <CastRow cast={m.credits?.cast} />
+      <CastRow cast={tmdbCast(m.credits?.cast)} />
       <CardRow
         title="Bunları da sevebilirsin"
         items={(m.recommendations?.results ?? [])

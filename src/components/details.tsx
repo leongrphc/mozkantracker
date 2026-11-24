@@ -1,14 +1,34 @@
 import Image from "next/image";
+import Link from "next/link";
 import type { ReactNode } from "react";
 import { PosterCard, type PosterCardData } from "@/components/poster-card";
+import { SeasonCount } from "@/components/tracker-controls";
 import {
   img,
-  type CastMember,
   type Provider,
   type Video,
   type WatchProviders,
 } from "@/lib/tmdb";
+import type { Card } from "@/lib/tracker";
 
+export interface NormalizedCast {
+  key: string;
+  name: string;
+  character: string;
+  photo: string | null;
+}
+
+export interface NormalizedSeason {
+  key: number;
+  number: number;
+  name: string;
+  episodeCount: number;
+  year: string;
+  poster: string | null;
+  href: string;
+}
+
+/** backdrop ve poster tam URL olarak verilir (TMDB ya da TVmaze). */
 export function DetailHero({
   backdrop,
   poster,
@@ -26,13 +46,11 @@ export function DetailHero({
   tagline?: string;
   children?: ReactNode;
 }) {
-  const backdropUrl = img(backdrop, "w1280");
-  const posterUrl = img(poster, "w500");
   return (
     <section className="relative isolate overflow-hidden border-b border-line">
-      {backdropUrl ? (
+      {backdrop ? (
         <Image
-          src={backdropUrl}
+          src={backdrop}
           alt=""
           fill
           priority
@@ -43,9 +61,9 @@ export function DetailHero({
       <div className="absolute inset-0 -z-10 bg-gradient-to-t from-bg via-bg/80 to-bg/30" />
       <div className="mx-auto flex max-w-6xl flex-col gap-8 px-4 py-10 sm:flex-row sm:items-end sm:py-16">
         <div className="relative mx-auto aspect-[2/3] w-44 shrink-0 overflow-hidden rounded-xl border border-line bg-surface-2 shadow-2xl sm:mx-0 sm:w-60">
-          {posterUrl ? (
+          {poster ? (
             <Image
-              src={posterUrl}
+              src={poster}
               alt={`${title} afişi`}
               fill
               priority
@@ -205,28 +223,90 @@ export function Trailer({ video }: { video: Video | null }) {
   );
 }
 
-export function CastRow({ cast }: { cast?: CastMember[] }) {
-  const list = (cast ?? []).slice(0, 15);
+export function CastRow({ cast }: { cast: NormalizedCast[] }) {
+  const list = cast.slice(0, 15);
   if (!list.length) return null;
   return (
     <Section title="Oyuncular">
       <ul className="scroll-row -mx-4 flex gap-4 overflow-x-auto px-4 pb-2">
-        {list.map((c) => {
-          const src = img(c.profile_path, "w185");
-          return (
-            <li key={`${c.id}-${c.character}`} className="w-28 shrink-0">
-              <div className="relative aspect-[2/3] overflow-hidden rounded-xl border border-line bg-surface-2">
-                {src ? (
-                  <Image src={src} alt="" fill sizes="112px" className="object-cover" />
-                ) : null}
-              </div>
-              <p className="mt-2 text-sm font-medium leading-tight">{c.name}</p>
-              <p className="text-xs text-muted">{c.character}</p>
-            </li>
-          );
-        })}
+        {list.map((c) => (
+          <li key={c.key} className="w-28 shrink-0">
+            <div className="relative aspect-[2/3] overflow-hidden rounded-xl border border-line bg-surface-2">
+              {c.photo ? (
+                <Image src={c.photo} alt="" fill sizes="112px" className="object-cover" />
+              ) : null}
+            </div>
+            <p className="mt-2 text-sm font-medium leading-tight">{c.name}</p>
+            <p className="text-xs text-muted">{c.character}</p>
+          </li>
+        ))}
       </ul>
     </Section>
+  );
+}
+
+export function SeasonGrid({
+  card,
+  seasons,
+}: {
+  card: Card;
+  seasons: NormalizedSeason[];
+}) {
+  if (!seasons.length) return null;
+  return (
+    <Section title="Sezonlar">
+      <ul className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+        {seasons.map((s) => (
+          <li key={s.key}>
+            <Link
+              href={s.href}
+              className="flex gap-4 rounded-xl border border-line bg-surface/60 p-3 hover:border-accent"
+            >
+              <div className="relative aspect-[2/3] w-16 shrink-0 overflow-hidden rounded-lg bg-surface-2">
+                {s.poster ? (
+                  <Image src={s.poster} alt="" fill sizes="64px" className="object-cover" />
+                ) : null}
+              </div>
+              <div className="min-w-0 py-1">
+                <p className="font-medium">{s.name}</p>
+                <p className="text-sm text-muted">
+                  {s.episodeCount} bölüm
+                  {s.year ? ` · ${s.year}` : ""}
+                </p>
+                <p className="mt-1 text-xs">
+                  <SeasonCount card={card} season={s.number} total={s.episodeCount} />
+                </p>
+              </div>
+            </Link>
+          </li>
+        ))}
+      </ul>
+    </Section>
+  );
+}
+
+export function NextEpisodes({
+  items,
+}: {
+  items: { label: string; href: string; code: string; name: string; date: string }[];
+}) {
+  if (!items.length) return null;
+  return (
+    <div className="mt-5 grid max-w-2xl gap-2 sm:grid-cols-2">
+      {items.map((i) => (
+        <Link
+          key={i.label}
+          href={i.href}
+          className="block rounded-xl border border-line bg-surface/70 px-4 py-3 hover:border-accent"
+        >
+          <p className="text-xs uppercase tracking-wider text-muted">{i.label}</p>
+          <p className="mt-0.5 text-sm">
+            <span className="font-medium text-accent">{i.code}</span> {i.name} ·{" "}
+            <span className="text-muted">{i.date}</span>
+          </p>
+        </Link>
+      ))}
+    </div>
   );
 }
 

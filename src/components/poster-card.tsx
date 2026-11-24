@@ -1,9 +1,12 @@
 import Image from "next/image";
 import Link from "next/link";
 
+/** movie / tv: TMDB, tvm: TVmaze (anahtarsız yedek) */
+export type MediaKind = "movie" | "tv" | "tvm";
+
 export interface PosterCardData {
   id: number;
-  type: "movie" | "tv";
+  type: MediaKind;
   title: string;
   year?: string;
   poster: string | null;
@@ -31,7 +34,7 @@ export function PosterCard({ item }: { item: PosterCardData }) {
           </div>
         )}
         <span className="absolute left-2 top-2 rounded bg-bg/80 px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-fg backdrop-blur">
-          {item.type === "tv" ? "Dizi" : "Film"}
+          {item.type === "movie" ? "Film" : "Dizi"}
         </span>
         {item.rating ? (
           <span className="absolute right-2 top-2 rounded bg-bg/80 px-1.5 py-0.5 text-xs font-medium tabular-nums text-accent backdrop-blur">
