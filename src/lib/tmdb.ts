@@ -197,6 +197,15 @@ export interface SeasonDetails {
 
 /* ---------- queries (cached) ---------- */
 
+async function orNull<T>(p: Promise<T>): Promise<T | null> {
+  try {
+    return await p;
+  } catch (e) {
+    if (e instanceof NotFoundError) return null;
+    throw e;
+  }
+}
+
 const APPEND = "videos,credits,watch/providers,recommendations,external_ids";
 const VIDEO_LANGS = "tr,en,null";
 
@@ -229,25 +238,29 @@ export async function getTrending(window: "day" | "week" = "week") {
 export async function getMovie(id: number) {
   "use cache";
   cacheLife("hours");
-  return tmdb<MovieDetails>(`/movie/${id}`, {
-    append_to_response: APPEND,
-    include_video_language: VIDEO_LANGS,
-  });
+  return orNull(
+    tmdb<MovieDetails>(`/movie/${id}`, {
+      append_to_response: APPEND,
+      include_video_language: VIDEO_LANGS,
+    }),
+  );
 }
 
 export async function getTv(id: number) {
   "use cache";
   cacheLife("hours");
-  return tmdb<TvDetails>(`/tv/${id}`, {
-    append_to_response: APPEND,
-    include_video_language: VIDEO_LANGS,
-  });
+  return orNull(
+    tmdb<TvDetails>(`/tv/${id}`, {
+      append_to_response: APPEND,
+      include_video_language: VIDEO_LANGS,
+    }),
+  );
 }
 
 export async function getSeason(tvId: number, season: number) {
   "use cache";
   cacheLife("hours");
-  return tmdb<SeasonDetails>(`/tv/${tvId}/season/${season}`);
+  return orNull(tmdb<SeasonDetails>(`/tv/${tvId}/season/${season}`));
 }
 
 /* ---------- helpers ---------- */
