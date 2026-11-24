@@ -3,7 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { epKey, setEpisodes } from "@/lib/tracker";
-import { episodeHref, showHref, useShowProgress, type ShowRow } from "@/lib/use-progress";
+import { showHref, useShowProgress, type ShowRow } from "@/lib/use-progress";
 
 export function NextUpCard({
   row,
@@ -29,10 +29,10 @@ export function NextUpCard({
           {item.title}
         </Link>
         <Link
-          href={episodeHref(item, nextUp.season, nextUp.episode)}
+          href={`/izle/${item.type}/${item.id}?s=${nextUp.season}&e=${nextUp.episode}`}
           className="text-sm text-accent hover:underline"
         >
-          Sıradaki: S{nextUp.season} B{nextUp.episode}
+          ▶ Sıradaki: S{nextUp.season} B{nextUp.episode}
         </Link>
         <p className="text-xs text-muted">{remaining} bölüm kaldı</p>
         <button

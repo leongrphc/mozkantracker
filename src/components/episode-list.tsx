@@ -92,7 +92,15 @@ export function SeasonView({
                 ) : null}
               </div>
               {aired ? (
-                <EpisodeToggle card={card} season={season} episode={e.number} />
+                <div className="flex shrink-0 flex-col items-end gap-2">
+                  <Link
+                    href={`/izle/${card.type}/${card.id}?s=${season}&e=${e.number}`}
+                    className="inline-flex items-center gap-1.5 rounded-full bg-accent px-3 py-1.5 text-xs font-semibold text-accent-ink hover:brightness-110"
+                  >
+                    <span aria-hidden="true">▶</span> İzle
+                  </Link>
+                  <EpisodeToggle card={card} season={season} episode={e.number} />
+                </div>
               ) : null}
             </li>
           );

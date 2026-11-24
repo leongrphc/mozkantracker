@@ -6,6 +6,7 @@ import {
   CastRow,
   DetailHero,
   DetailSkeleton,
+  PlayLink,
   Trailer,
   WhereToWatch,
 } from "@/components/details";
@@ -93,7 +94,8 @@ async function Movie({ params }: { params: Params }) {
         <p className="mt-4 max-w-2xl leading-relaxed text-fg/90">
           {m.overview || "Türkçe özet bulunmuyor."}
         </p>
-        <div className="mt-6">
+        <div className="mt-6 flex flex-wrap items-center gap-3">
+          <PlayLink href={`/izle/movie/${m.id}`}>İzle</PlayLink>
           <StatusPicker card={card} />
         </div>
         {imdb ? (

@@ -98,6 +98,24 @@ export function DetailHero({
   );
 }
 
+export function PlayLink({
+  href,
+  children = "İzle",
+}: {
+  href: string;
+  children?: ReactNode;
+}) {
+  return (
+    <Link
+      href={href}
+      className="inline-flex items-center gap-2 rounded-full bg-accent px-5 py-2.5 text-sm font-semibold text-accent-ink hover:brightness-110"
+    >
+      <span aria-hidden="true">▶</span>
+      {children}
+    </Link>
+  );
+}
+
 export function Section({
   title,
   children,

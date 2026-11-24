@@ -7,6 +7,7 @@ import {
   DetailHero,
   DetailSkeleton,
   NextEpisodes,
+  PlayLink,
   SeasonGrid,
   Trailer,
   WhereToWatch,
@@ -137,7 +138,12 @@ async function Tv({ params }: { params: Params }) {
           {t.overview || "Türkçe özet bulunmuyor."}
         </p>
         <div className="mt-6 space-y-4">
-          <StatusPicker card={card} />
+          <div className="flex flex-wrap items-center gap-3">
+            <PlayLink href={`/izle/tv/${t.id}?s=${seasons[0]?.season_number ?? 1}&e=1`}>
+              1. bölümü izle
+            </PlayLink>
+            <StatusPicker card={card} />
+          </div>
           <TvProgress card={card} total={totalEpisodes} className="max-w-sm" />
         </div>
         <NextEpisodes

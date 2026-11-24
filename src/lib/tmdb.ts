@@ -263,6 +263,46 @@ export async function getSeason(tvId: number, season: number) {
   return orNull(tmdb<SeasonDetails>(`/tv/${tvId}/season/${season}`));
 }
 
+/**
+ * TVmaze gibi başka kaynaklardaki bir başlığı TMDB kimliğine çevirir.
+ * Oynatıcı TMDB kimlikleriyle çalıştığı için TVmaze kayıtlarında gerekir.
+ */
+export async function resolveTmdbId(opts: {
+  title: string;
+  year?: string;
+  type: MediaType;
+}): Promise<number | null> {
+  "use cache";
+  cacheLife("days");
+  if (!hasTmdbCredentials()) return null;
+
+  const data = await tmdb<Paged<SearchItem>>(`/search/${opts.type}`, {
+    query: opts.title,
+  });
+
+  const norm = (s: string) =>
+    s
+      .toLocaleLowerCase("tr")
+      .replace(/[^\p{L}\p{N}]+/gu, " ")
+      .trim();
+  const target = norm(opts.title);
+
+  const best = data.results
+    .map((r) => {
+      const title = norm(titleOf(r));
+      const year = (r.first_air_date ?? r.release_date ?? "").slice(0, 4);
+      let score = 0;
+      if (title === target) score += 4;
+      else if (title.includes(target) || target.includes(title)) score += 2;
+      if (opts.year && year === opts.year) score += 2;
+      if (r.poster_path) score += 1;
+      return { id: r.id, score };
+    })
+    .sort((a, b) => b.score - a.score)[0];
+
+  return best && best.score >= 2 ? best.id : null;
+}
+
 /* ---------- helpers ---------- */
 
 export function titleOf(i: SearchItem) {
