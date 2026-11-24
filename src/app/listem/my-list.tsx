@@ -15,6 +15,46 @@ import {
 } from "@/lib/tracker";
 
 const TABS: (Status | "all")[] = ["watching", "plan", "done", "all"];
+
+function formatHours(min: number) {
+  const h = Math.round(min / 60);
+  if (h < 48) return `${h} saat`;
+  const d = Math.floor(h / 24);
+  return `${d} gün ${h % 24} saat`;
+}
+
+function Stats() {
+  const { list, watched } = useTracker();
+  const items = Object.values(list);
+  if (!items.length && !Object.keys(watched).length) return null;
+
+  let episodes = 0;
+  let minutes = 0;
+  for (const [k, eps] of Object.entries(watched)) {
+    episodes += eps.length;
+    minutes += eps.length * (list[k]?.runtime ?? 45);
+  }
+  const movies = items.filter((i) => i.type === "movie" && i.status === "done");
+  minutes += movies.reduce((n, m) => n + (m.runtime ?? 110), 0);
+  const finishedShows = items.filter((i) => i.type !== "movie" && i.status === "done").length;
+
+  const tiles = [
+    { label: "İzlenen bölüm", value: episodes.toLocaleString("tr-TR") },
+    { label: "Biten dizi", value: finishedShows },
+    { label: "İzlenen film", value: movies.length },
+    { label: "Ekran süresi (tahmini)", value: formatHours(minutes) },
+  ];
+  return (
+    <dl className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-4">
+      {tiles.map((t) => (
+        <div key={t.label} className="rounded-xl border border-line bg-surface/60 p-4">
+          <dt className="text-xs text-muted">{t.label}</dt>
+          <dd className="mt-1 font-display text-3xl tabular-nums">{t.value}</dd>
+        </div>
+      ))}
+    </dl>
+  );
+}
 const TAB_LABEL = { ...STATUS_LABEL, all: "Tümü" };
 
 export function MyList() {
@@ -57,6 +97,7 @@ export function MyList() {
 
   return (
     <>
+      <Stats />
       <div className="mt-6 flex flex-wrap items-center gap-2">
         {TABS.map((t) => (
           <button
@@ -105,8 +146,8 @@ export function MyList() {
           {shown.map((i) => (
             <li key={`${i.type}-${i.id}`} className="flex flex-col">
               <PosterCard item={i} />
-              {i.type === "tv" && i.totalEpisodes ? (
-                <TvProgress tvId={i.id} total={i.totalEpisodes} className="mt-2" />
+              {i.type !== "movie" && i.totalEpisodes ? (
+                <TvProgress card={i} total={i.totalEpisodes} className="mt-2" />
               ) : null}
               <div className="mt-2 flex items-center gap-1">
                 <select
