@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Geist, Instrument_Serif } from "next/font/google";
 import Link from "next/link";
 import { SearchBox } from "@/components/search-box";
@@ -22,6 +22,11 @@ export const metadata: Metadata = {
   },
   description:
     "Dizi ve filmleri ara, Türkiye'de hangi platformda izleyebileceğini gör, izlediklerini takip et.",
+  appleWebApp: { capable: true, title: "mozkantracker", statusBarStyle: "black-translucent" },
+};
+
+export const viewport: Viewport = {
+  themeColor: "#0d0c0b",
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
@@ -42,13 +47,20 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
             <div className="hidden flex-1 sm:block">
               <SearchBox compact />
             </div>
-            <nav className="ml-auto flex items-center gap-1 text-sm sm:ml-0">
-              <Link
-                href="/listem"
-                className="rounded-md px-3 py-2 text-muted hover:bg-surface hover:text-fg"
-              >
-                Listem
-              </Link>
+            <nav className="ml-auto flex items-center text-sm sm:ml-0">
+              {[
+                ["/kesfet", "Keşfet"],
+                ["/takvim", "Takvim"],
+                ["/listem", "Listem"],
+              ].map(([href, label]) => (
+                <Link
+                  key={href}
+                  href={href}
+                  className="rounded-md px-2 py-2 text-muted hover:bg-surface hover:text-fg sm:px-3"
+                >
+                  {label}
+                </Link>
+              ))}
             </nav>
           </div>
           <div className="px-4 pb-3 sm:hidden">
