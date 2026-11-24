@@ -4,12 +4,21 @@ Dizi ve filmleri ara, Türkiye'de **hangi yasal platformda** izlenebildiğini g�
 
 ## Özellikler
 
-- **Arama:** dizi + film birlikte (TMDB multi search), sayfalı sonuçlar
+- **Arama + canlı öneriler:** yazarken afişli öneri listesi, klavyeyle seçim
 - **Detay sayfası:** özet, tür, süre, puan, oyuncular, fragman (YouTube), öneriler, IMDb linki
 - **Nerede izlenir:** Türkiye için abonelik / ücretsiz / kiralık / satın alma platformları (TMDB + JustWatch verisi)
-- **Diziler:** sezon listesi, bölüm listesi, son ve sıradaki bölüm bilgisi
-- **Takip (Listem):** İzleyeceğim / İzliyorum / Bitirdim, bölüm bölüm "izledim" işareti, ilerleme çubuğu
+- **Keşfet:** platforma (Netflix, Prime, Disney+, BluTV…) ve türe göre filtrele; popüler / en iyi / en yeni
+- **Diziler:** sezon ve bölüm listesi, son ve sıradaki bölüm
+- **Takip (Listem):** İzleyeceğim / İzliyorum / Bitirdim, bölüm bölüm "izledim", ilerleme çubuğu, istatistikler
+- **Kaldığın yerden devam:** ana sayfada her dizinin izlenmemiş ilk bölümü, tek tıkla "izledim"
+- **Takvim:** takip ettiğin dizilerin yaklaşan bölümleri, tarihe göre
 - **Yedekleme:** liste tarayıcıda saklanır, JSON olarak indirip geri yüklenebilir
+- **Telefona eklenebilir (PWA)**
+
+## Basit mod (anahtarsız)
+
+TMDB anahtarı yoksa site **TVmaze** ile çalışır: dizi arama, detay, sezon/bölüm, takip, takvim çalışır.
+Filmler, "Türkiye'de nerede izlenir" ve Keşfet için TMDB anahtarı gerekir.
 
 ## Kurulum
 
@@ -34,7 +43,7 @@ Dizi ve filmleri ara, Türkiye'de **hangi yasal platformda** izlenebildiğini g�
 ## Teknoloji
 
 Next.js 16 (App Router, Cache Components), React 19, Tailwind CSS 4, TypeScript.
-TMDB yanıtları sunucuda `use cache` ile saatlik önbelleğe alınır. Anahtar sadece sunucuda kullanılır, tarayıcıya gitmez.
+TMDB/TVmaze yanıtları sunucuda `use cache` ile saatlik önbelleğe alınır. Anahtar sadece sunucuda kullanılır, tarayıcıya gitmez.
 
 ## Yayına alma (Vercel)
 
